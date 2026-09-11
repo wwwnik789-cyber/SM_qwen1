@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Calculator, ChevronRight, ChevronLeft, Package, Palette,
   Lightbulb, Wrench, Truck, ShieldCheck, FileText, Receipt,
@@ -65,13 +65,21 @@ function App() {
   const currentStepIndex = steps.findIndex(s => s.id === currentStep);
 
   const goNext = () => {
-    const nextIdx = currentStepIndex + 1;
-    if (nextIdx < steps.length) setCurrentStep(steps[nextIdx].id);
+    setCurrentStep(prev => {
+      const idx = steps.findIndex(s => s.id === prev);
+      const nextIdx = idx + 1;
+      if (nextIdx < steps.length) return steps[nextIdx].id;
+      return prev;
+    });
   };
 
   const goPrev = () => {
-    const prevIdx = currentStepIndex - 1;
-    if (prevIdx >= 0) setCurrentStep(steps[prevIdx].id);
+    setCurrentStep(prev => {
+      const idx = steps.findIndex(s => s.id === prev);
+      const prevIdx = idx - 1;
+      if (prevIdx >= 0) return steps[prevIdx].id;
+      return prev;
+    });
   };
 
   const resetAll = () => {
@@ -387,15 +395,13 @@ function App() {
       <main className="max-w-7xl mx-auto px-4 pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentStep}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.25 }}
-                className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-white/10 p-5 sm:p-6"
-              >
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 1, y: 0 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-white/10 p-5 sm:p-6"
+            >
                 {/* PRODUCT TYPE */}
                 {currentStep === 'product' && (
                   <div>
@@ -403,7 +409,11 @@ function App() {
                     <p className="text-slate-400 text-sm mb-5">Выберите рекламную конструкцию для расчёта</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       {productTypes.map(product => (
-                        <button key={product.id} onClick={() => setSelectedProduct(product)}
+                        <button key={product.id} onClick={() => {
+                          setSelectedProduct(product);
+                          // Автоматический переход на следующий шаг после выбора
+                          setTimeout(() => goNext(), 300);
+                        }}
                           className={`p-3.5 rounded-xl border text-left transition-all hover:scale-[1.01] ${
                             selectedProduct?.id === product.id ? 'bg-indigo-500/20 border-indigo-500/50 ring-2 ring-indigo-500/30' : 'bg-slate-700/30 border-slate-600/50 hover:border-slate-500/50'
                           }`}>
@@ -428,7 +438,10 @@ function App() {
                     <p className="text-slate-400 text-sm mb-5">Материал влияет на вес, долговечность и стоимость</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       {materials.map(mat => (
-                        <button key={mat.id} onClick={() => setSelectedMaterial(mat.id)}
+                        <button key={mat.id} onClick={() => {
+                          setSelectedMaterial(mat.id);
+                          setTimeout(() => goNext(), 300);
+                        }}
                           className={`p-3.5 rounded-xl border text-left transition-all ${
                             selectedMaterial === mat.id ? 'bg-indigo-500/20 border-indigo-500/50 ring-2 ring-indigo-500/30' : 'bg-slate-700/30 border-slate-600/50 hover:border-slate-500/50'
                           }`}>
@@ -559,7 +572,10 @@ function App() {
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-5">
                       {availableLighting.map(light => (
-                        <button key={light.id} onClick={() => setSelectedLighting(light.id)}
+                        <button key={light.id} onClick={() => {
+                          setSelectedLighting(light.id);
+                          setTimeout(() => goNext(), 300);
+                        }}
                           className={`p-3 rounded-xl border text-left transition-all ${
                             selectedLighting === light.id ? 'bg-indigo-500/20 border-indigo-500/50 ring-2 ring-indigo-500/30' : 'bg-slate-700/30 border-slate-600/50 hover:border-slate-500/50'
                           }`}>
@@ -745,7 +761,10 @@ function App() {
                     {/* Зона доставки */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-5">
                       {deliveryZones.map(zone => (
-                        <button key={zone.id} onClick={() => setSelectedDelivery(zone.id)}
+                        <button key={zone.id} onClick={() => {
+                          setSelectedDelivery(zone.id);
+                          setTimeout(() => goNext(), 300);
+                        }}
                           className={`p-3 rounded-xl border text-left transition-all ${
                             selectedDelivery === zone.id ? 'bg-indigo-500/20 border-indigo-500/50 ring-2 ring-indigo-500/30' : 'bg-slate-700/30 border-slate-600/50 hover:border-slate-500/50'
                           }`}>
@@ -926,8 +945,7 @@ function App() {
                     </div>
                   </div>
                 )}
-              </motion.div>
-            </AnimatePresence>
+            </motion.div>
 
             {/* Navigation */}
             <div className="flex justify-between mt-5">
